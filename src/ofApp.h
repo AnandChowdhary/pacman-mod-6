@@ -21,5 +21,6 @@ class ofApp : public ofBaseApp{
 		void dragEvent(ofDragInfo dragInfo);
 		void gotMessage(ofMessage msg);
         void movePacman(int direction);
+        bool hasCollision(glm::vec3 position);
 		
 };
