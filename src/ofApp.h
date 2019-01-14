@@ -21,6 +21,7 @@ class ofApp : public ofBaseApp{
 		void dragEvent(ofDragInfo dragInfo);
 		void gotMessage(ofMessage msg);
         void movePacman(int direction);
+        void createWallLine(char direction, int x, int y, int length);
         bool hasCollision(glm::vec3 position);
 		
 };

@@ -1,17 +1,18 @@
 #include "iostream"
 #include "ofApp.h"
 #include <stdio.h>
+#include <vector>
 
 using namespace std;
 
 glm::vec3 pacmanPosition;
 
-glm::vec3 obstacles[3];
+std::vector<glm::vec3> obstacles = {};
 
 int currentDirection, previousDirection;
 int size = 25;
 int rows = 30;
-int columns = 20;
+int columns = 19;
 int currentSeconds = 0;
 
 //--------------------------------------------------------------
@@ -21,12 +22,31 @@ void ofApp::setup(){
     // Directions: 0 => up, 1 => right, 2 => down, 3 => left
     currentDirection = 1;
     previousDirection = 1;
-    obstacles[0].x = 10;
-    obstacles[0].y = 10;
-    obstacles[1].x = 10;
-    obstacles[1].y = 11;
-    obstacles[2].x = 10;
-    obstacles[2].y = 12;
+    
+    // Add obstacles
+    ofApp::createWallLine('h', 2, 1, 15);
+    ofApp::createWallLine('v', 1, 13, 2);
+    ofApp::createWallLine('h', 2, 12, 3);
+    ofApp::createWallLine('h', 6, 12, 7);
+    ofApp::createWallLine('h', 14, 12, 3);
+    ofApp::createWallLine('v', 17, 1, 12);
+    ofApp::createWallLine('v', 1, 1, 12);
+    ofApp::createWallLine('v', 1, 17, 12);
+    ofApp::createWallLine('v', 9, 13, 2);
+}
+
+//--------------------------------------------------------------
+void ofApp::createWallLine(char direction, int x, int y, int length){
+    for (int i = 0; i < length; i++) {
+        glm::vec3 newObstacle;
+        int updatedX = x;
+        int updatedY = y;
+        if (direction == 'h') updatedX += i;
+        if (direction == 'v') updatedY += i;
+        newObstacle.x = updatedX;
+        newObstacle.y = updatedY;
+        obstacles.push_back(newObstacle);
+    }
 }
 
 //--------------------------------------------------------------
@@ -70,10 +90,10 @@ void ofApp::draw(){
     ofSetColor(50, 50, 50);
     ofFill();
     // (sizeof(obstacles) / sizeof(obstacles[0])) is used to get the true size of the array
-    for (int i = 0; i < (sizeof(obstacles) / sizeof(obstacles[0])); i++) {
+    for (glm::vec3 obstacle : obstacles) {
         glm::vec3 trueObstaclePosition;
-        trueObstaclePosition.x = obstacles[i].x * size;
-        trueObstaclePosition.y = obstacles[i].y * size;
+        trueObstaclePosition.x = obstacle.x * size;
+        trueObstaclePosition.y = obstacle.y * size;
         ofDrawRectangle(trueObstaclePosition, size, size);
     }
 
@@ -110,8 +130,8 @@ void ofApp::keyPressed(int key){
 //--------------------------------------------------------------
 bool ofApp::hasCollision(glm::vec3 position){
     int collisionDetected = false;
-    for (int i = 0; i < (sizeof(obstacles) / sizeof(obstacles[0])); i++) {
-        if (obstacles[i].x == position.x && obstacles[i].y == position.y) collisionDetected = true;
+    for (glm::vec3 obstacle : obstacles) {
+        if (obstacle.x == position.x && obstacle.y == position.y) collisionDetected = true;
     }
     return collisionDetected;
 }
