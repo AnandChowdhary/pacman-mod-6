@@ -2,7 +2,12 @@
 #include "ofApp.h"
 #include <stdio.h>
 
+using namespace std;
+
 glm::vec3 pacmanPosition;
+
+glm::vec3 obstacles[1];
+
 int currentDirection;
 int size = 25;
 int rows = 30;
@@ -15,6 +20,8 @@ void ofApp::setup(){
     pacmanPosition.y = 0;
     // Directions: 0 => up, 1 => right, 2 => down, 3 => left
     currentDirection = 1;
+    obstacles[0].x = 10;
+    obstacles[0].y = 10;
 }
 
 //--------------------------------------------------------------
@@ -53,17 +60,27 @@ void ofApp::draw(){
         currentSeconds++;
         ofApp::movePacman(currentDirection);
     }
-    
 
-}
-
-//--------------------------------------------------------------
-void ofApp::keyPressed(int key){
+    // Make an obstacle
+    ofSetColor(50, 50, 50);
+    ofFill();
+    for (int i = 0; i < 1; i++) {
+        std::cout << i << "\n";
+        glm::vec3 trueObstaclePosition;
+        trueObstaclePosition.x = obstacles[i].x * size;
+        trueObstaclePosition.y = obstacles[i].y * size;
+        ofDrawRectangle(trueObstaclePosition, size, size);
+    }
 
 }
 
 //--------------------------------------------------------------
 void ofApp::keyReleased(int key){
+
+}
+
+//--------------------------------------------------------------
+void ofApp::keyPressed(int key){
     switch (key) {
         case 57356:
             // Move left
