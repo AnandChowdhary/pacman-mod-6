@@ -11,8 +11,8 @@ std::vector<glm::vec3> obstacles = {};
 
 int currentDirection, previousDirection;
 int size = 25;
-int rows = 30;
-int columns = 19;
+int rows = 31;
+int columns = 21;
 int currentSeconds = 0;
 
 //--------------------------------------------------------------
@@ -24,15 +24,35 @@ void ofApp::setup(){
     previousDirection = 1;
     
     // Add obstacles
-    ofApp::createWallLine('h', 2, 1, 15);
-    ofApp::createWallLine('v', 1, 13, 2);
-    ofApp::createWallLine('h', 2, 12, 3);
-    ofApp::createWallLine('h', 6, 12, 7);
-    ofApp::createWallLine('h', 14, 12, 3);
-    ofApp::createWallLine('v', 17, 1, 12);
-    ofApp::createWallLine('v', 1, 1, 12);
-    ofApp::createWallLine('v', 1, 17, 12);
-    ofApp::createWallLine('v', 9, 13, 2);
+    ofApp::createWallLine('h', 1, 1, 19); //Upper wall
+    ofApp::createWallLine('v', 1, 1, 10); //Left Border
+    ofApp::createWallLine('h', 1, 10, 4);
+    ofApp::createWallLine('v', 4, 10, 4);
+    ofApp::createWallLine('h', 1, 13, 4);
+    ofApp::createWallLine('h', 1, 15, 4);
+    ofApp::createWallLine('v', 4, 15, 4);
+    ofApp::createWallLine('h', 1, 18, 4);
+    ofApp::createWallLine('v', 1, 18, 12);
+    ofApp::createWallLine('h', 1, 29, 19);
+    
+    ofApp::createWallLine('v', 19, 1, 10); //Right Border
+    ofApp::createWallLine('h', 15, 10, 4);
+    ofApp::createWallLine('v', 15, 10, 4);
+    ofApp::createWallLine('h', 15, 13, 4);
+    ofApp::createWallLine('h', 15, 15, 4);
+    ofApp::createWallLine('v', 15, 15, 4);
+    ofApp::createWallLine('h', 15, 18, 4);
+    ofApp::createWallLine('v', 19, 18, 12);
+    
+    ofApp::createWallLine('h', 3, 3, 2); //Upper obstacles
+    ofApp::createWallLine('h', 3, 4, 2);
+    ofApp::createWallLine('h', 6, 3, 3);
+    ofApp::createWallLine('h', 6, 4, 3);
+    ofApp::createWallLine('v', 10, 2, 3);
+    ofApp::createWallLine('h', 12, 3, 3);
+    ofApp::createWallLine('h', 12, 4, 3);
+    ofApp::createWallLine('h', 16, 3, 2);
+    ofApp::createWallLine('h', 16, 4, 2);
 }
 
 //--------------------------------------------------------------
