@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ofMain.h"
+#include "ofxGif.h"
 
 class ofApp : public ofBaseApp{
 
@@ -21,7 +22,11 @@ class ofApp : public ofBaseApp{
 		void dragEvent(ofDragInfo dragInfo);
 		void gotMessage(ofMessage msg);
         void movePacman(int direction);
+        void drawPacman();
         void createWallLine(char direction, int x, int y, int length);
         bool hasCollision(glm::vec3 position);
+    
+        // Library
+        ofxGIF::fiGifLoader gifloader;
 		
 };

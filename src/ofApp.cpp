@@ -14,14 +14,18 @@ int size = 25;
 int rows = 31;
 int columns = 21;
 int currentSeconds = 0;
+int animationIndex = 0;
 
 //--------------------------------------------------------------
 void ofApp::setup(){
-    pacmanPosition.x = 0;
-    pacmanPosition.y = 0;
-    // Directions: 0 => up, 1 => right, 2 => down, 3 => left
+    pacmanPosition.x = 10;
+    pacmanPosition.y = 14;
+
     currentDirection = 1;
     previousDirection = 1;
+    
+    // Load character image
+    gifloader.load("images/mario-walking.gif");
     
     // Add obstacles
     ofApp::createWallLine('h', 1, 1, 19); //Upper wall
@@ -71,7 +75,6 @@ void ofApp::createWallLine(char direction, int x, int y, int length){
 
 //--------------------------------------------------------------
 void ofApp::update(){
-
 }
 
 //--------------------------------------------------------------
@@ -91,18 +94,15 @@ void ofApp::draw(){
     }
 
     // Draw Pacman
-    ofSetColor(150, 0, 0);
-    ofFill();
-    glm::vec3 truePacmanPosition;
-    truePacmanPosition.x = pacmanPosition.x * size;
-    truePacmanPosition.y = pacmanPosition.y * size;
-    ofDrawRectangle(truePacmanPosition, size, size);
+    ofApp::drawPacman();
 
     // Move Pacman, once per second
     // ofGetElapsedTimef(); returns a float, convert it to int
     int elapsedSeconds = (int)(ofGetElapsedTimeMillis() / 100);
     if (elapsedSeconds > currentSeconds) {
         currentSeconds++;
+        animationIndex++;
+        if (animationIndex > gifloader.pages.size() - 1) animationIndex = 0;
         ofApp::movePacman(currentDirection);
     }
 
@@ -117,6 +117,19 @@ void ofApp::draw(){
         ofDrawRectangle(trueObstaclePosition, size, size);
     }
 
+}
+
+void ofApp::drawPacman() {
+    // The following fixes a bug with RGB transforming to BGR in the library
+    // Source: https://forum.openframeworks.cc/t/ofimage-from-gif-displays-with-blue-tint/22989/6
+    /* fix */ ofSetColor(255, 255, 255, 255);
+    /* fix */ ofImage img = gifloader.pages[animationIndex];
+    /* fix */ ofPixels pix = img.getPixels();
+    /* fix */ img.setFromPixels(pix);
+    glm::vec3 truePacmanPosition;
+    truePacmanPosition.x = pacmanPosition.x * size;
+    truePacmanPosition.y = pacmanPosition.y * size;
+    img.draw(truePacmanPosition.x, truePacmanPosition.y, size, size);
 }
 
 //--------------------------------------------------------------

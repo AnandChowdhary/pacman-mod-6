@@ -2,6 +2,21 @@
 <Workspace
    version = "1.0">
    <FileRef
+      location = "group:../src/main.cpp">
+   </FileRef>
+   <FileRef
+      location = "group:../src/ofApp.cpp">
+   </FileRef>
+   <FileRef
+      location = "group:../src/ofApp.h">
+   </FileRef>
+   <FileRef
+      location = "group:../src/ofxGif.cpp">
+   </FileRef>
+   <FileRef
+      location = "group:../src/ofxGif.h">
+   </FileRef>
+   <FileRef
       location = "self:">
    </FileRef>
 </Workspace>
