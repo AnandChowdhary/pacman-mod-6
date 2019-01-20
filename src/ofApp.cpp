@@ -37,39 +37,61 @@ void ofApp::setup(){
     
     // Initialize variables
     screen = 0;
-    points = 0;
+    characterOption = 1;
     size = 25;
+    
+    // Load screen images
+    screenHome1.load("screens/option-1.png");
+    screenHome2.load("screens/option-2.png");
+    screenHome3.load("screens/option-3.png");
+    screenScore.load("screens/end.png");
+
+}
+
+void ofApp::setupGame() {
+    
+    // Initialize variables
+    screen = 0;
+    points = 0;
     rows = 31;
     columns = 21;
     currentTenths = (int)(ofGetElapsedTimeMillis() / 100);
     animationIndex = 0;
     coinIndex = 0;
     enemyIndex = 0;
-    characterOption = 1;
     
     // Empty vectors
     obstacles.clear();
     enemies.clear();
     coins.clear();
-
-    // Background color
-    ofBackground(90, 143, 243);
-
+    
     pacmanPosition.x = 10;
     pacmanPosition.y = 13;
-
+    
     currentDirection = 1;
     previousDirection = 1;
     
     // Load images
-    characterGif.load("images/mario-walking.gif");
-    coinGif.load("images/coin.gif");
-    enemyGif.load("images/goomba.gif");
-    block.load("images/block.png");
-    screenHome1.load("screens/option-1.png");
-    screenHome2.load("screens/option-2.png");
-    screenHome3.load("screens/option-3.png");
-    screenScore.load("screens/end.png");
+    std::cout << characterOption << "\n";
+    if (characterOption == 3) {
+        ofBackground(183, 243, 245);
+        characterGif.load("images/bird.gif");
+        coinGif.load("images/egg.gif");
+        enemyGif.load("images/pig.gif");
+        block.load("images/log.png");
+    } if (characterOption == 1) {
+        ofBackground(247, 213, 139);
+        characterGif.load("images/ash.gif");
+        coinGif.load("images/pokeball.gif");
+        enemyGif.load("images/goomba.gif");
+        block.load("images/tree.png");
+    } else {
+        ofBackground(90, 143, 243);
+        characterGif.load("images/mario-walking.gif");
+        coinGif.load("images/coin.gif");
+        enemyGif.load("images/goomba.gif");
+        block.load("images/block.png");
+    }
     
     // Add obstacles
     int obstacleData[] = { 0, 1, 1, 19, 1, 1, 1, 10, 0, 1, 10, 4, 1, 4, 10, 4, 0, 1, 13, 4, 0, 1, 15, 4, 1, 4, 15, 4, 0, 1, 18, 4, 1, 1, 18, 12, 0, 1, 29, 19, 1, 19, 1, 10, 0, 16, 10, 4, 1, 16, 10, 4, 0, 16, 13, 4, 0, 16, 15, 4, 1, 16, 15, 4, 0, 16, 18, 4, 1, 19, 18, 12, 0, 3, 3, 2, 0, 3, 4, 2, 0, 6, 3, 3, 0, 6, 4, 3, 1, 10, 2, 3, 0, 12, 3, 3, 0, 12, 4, 3, 0, 16, 3, 2, 0, 16, 4, 2, 0, 3, 6, 2, 0, 3, 8, 2, 1, 6, 6, 7, 0, 6, 9, 3, 0, 8, 6, 5, 1, 10, 6, 4, 1, 14, 6, 7, 0, 12, 9, 3, 0, 16, 6, 2, 0, 16, 8, 2, 0, 8, 11, 2, 0, 11, 11, 2, 1, 8, 11, 5, 1, 12, 11, 5, 0, 8, 15, 5, 1, 6, 14, 4, 1, 14, 14, 4, 0, 8, 17, 5, 1, 10, 17, 4, 0, 3, 20, 2, 1, 4, 20, 4, 0, 2, 25, 1, 1, 4, 25, 1, 0, 6, 21, 3, 1, 8, 21, 5, 1, 6, 23, 5, 0, 3, 27, 6, 1, 10, 22, 6, 0, 16, 20, 2, 1, 16, 20, 4, 0, 18, 25, 1, 1, 16, 25, 1, 0, 12, 21, 3, 1, 12, 21, 5, 1, 14, 23, 5, 0, 12, 27, 6 };
@@ -78,7 +100,7 @@ void ofApp::setup(){
     for (int i = 0; i < sizeof(obstacleData) / sizeof(obstacleData[0]); i += 4) {
         ofApp::createWallLine((obstacleData[i] == 0 ? 'h' : 'v'), obstacleData[i + 1], obstacleData[i + 2], obstacleData[i + 3]);
     }
-
+    
     for (int i = 2; i < columns - 2; i++) {
         for (int j = 2; j < rows - 2; j++) {
             int hasSomething = false;
@@ -95,6 +117,7 @@ void ofApp::setup(){
     }
     
     ofApp:createEnemy(18, 28);
+    
 }
 
 void ofApp::createEnemy(int x, int y) {
@@ -171,19 +194,6 @@ void ofApp::drawImageScreen(int index) {
 }
 
 void ofApp::drawGame(){
-    
-    // Draw grid
-    ofSetColor(75, 121, 209);
-    ofSetLineWidth(1);
-    ofNoFill();
-    for (int i = 0; i < columns; i++) {
-        for (int j = 0; j < rows; j++) {
-            glm::vec3 position;
-            position.x = i * size;
-            position.y = j * size;
-            ofDrawRectangle(position, size, size);
-        }
-    }
     
     // Draw Pacman
     ofApp::drawPacman();
@@ -375,9 +385,11 @@ void ofApp::keyPressed(int key){
                 }
                 break;
             case 13: // Enter
+                ofApp::setupGame();
                 screen = 1;
                 break;
             case 32: // Spacebar
+                ofApp::setupGame();
                 screen = 1;
                 break;
         }

@@ -10,6 +10,7 @@ class ofApp : public ofBaseApp{
 		void update();
 		void draw();
         void drawGame();
+        void setupGame();
         void drawImageScreen(int index);
 		void keyPressed(int key);
 		void keyReleased(int key);
