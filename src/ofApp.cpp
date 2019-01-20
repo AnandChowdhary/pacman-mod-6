@@ -8,24 +8,36 @@ using namespace std;
 glm::vec3 pacmanPosition;
 
 std::vector<glm::vec3> obstacles = {};
+std::vector<glm::vec3> coins = {};
 
 int currentDirection, previousDirection;
+int points = 0;
 int size = 25;
 int rows = 31;
 int columns = 21;
-int currentSeconds = 0;
+int currentTenths = 0;
 int animationIndex = 0;
+int coinIndex = 0;
+
+ofImage coinSprite;
+ofImage block;
 
 //--------------------------------------------------------------
 void ofApp::setup(){
+    
+    // Background color
+    ofBackground(90, 143, 243);
+
     pacmanPosition.x = 10;
     pacmanPosition.y = 14;
 
     currentDirection = 1;
     previousDirection = 1;
     
-    // Load character image
-    gifloader.load("images/mario-walking.gif");
+    // Load images
+    characterGif.load("images/mario-walking.gif");
+    coinGif.load("images/coin.gif");
+    block.load("images/block.png");
     
     // Add obstacles
     ofApp::createWallLine('h', 1, 1, 19); //Upper wall
@@ -57,10 +69,25 @@ void ofApp::setup(){
     ofApp::createWallLine('h', 12, 4, 3);
     ofApp::createWallLine('h', 16, 3, 2);
     ofApp::createWallLine('h', 16, 4, 2);
+
+    for (int i = 2; i < columns - 2; i++) {
+        for (int j = 2; j < rows - 2; j++) {
+            int hasSomething = false;
+            for (glm::vec3 obstacle : obstacles) {
+                if (obstacle.x == i && obstacle.y == j) hasSomething = true;
+            }
+            if (!hasSomething && (rand() % 3 + 1) == 3) {
+                glm::vec3 newCoin;
+                newCoin.x = i;
+                newCoin.y = j;
+                coins.push_back(newCoin);
+            }
+        }
+    }
 }
 
 //--------------------------------------------------------------
-void ofApp::createWallLine(char direction, int x, int y, int length){
+void ofApp::createWallLine(char direction, int x, int y, int length, bool obstacle){
     for (int i = 0; i < length; i++) {
         glm::vec3 newObstacle;
         int updatedX = x;
@@ -69,8 +96,17 @@ void ofApp::createWallLine(char direction, int x, int y, int length){
         if (direction == 'v') updatedY += i;
         newObstacle.x = updatedX;
         newObstacle.y = updatedY;
-        obstacles.push_back(newObstacle);
+        if (obstacle) {
+            obstacles.push_back(newObstacle);
+        } else {
+            coins.push_back(newObstacle);
+        }
     }
+}
+
+//--------------------------------------------------------------
+void ofApp::createCoins(char direction, int x, int y, int length){
+    ofApp::createWallLine(direction, x, y, length, false);
 }
 
 //--------------------------------------------------------------
@@ -81,7 +117,7 @@ void ofApp::update(){
 void ofApp::draw(){
 
     // Draw grid
-    ofSetColor(150, 150, 150);
+    ofSetColor(75, 121, 209);
     ofSetLineWidth(1);
     ofNoFill();
     for (int i = 0; i < columns; i++) {
@@ -96,25 +132,41 @@ void ofApp::draw(){
     // Draw Pacman
     ofApp::drawPacman();
 
-    // Move Pacman, once per second
+    // Move Pacman, ten times per second
     // ofGetElapsedTimef(); returns a float, convert it to int
-    int elapsedSeconds = (int)(ofGetElapsedTimeMillis() / 100);
-    if (elapsedSeconds > currentSeconds) {
-        currentSeconds++;
-        animationIndex++;
-        if (animationIndex > gifloader.pages.size() - 1) animationIndex = 0;
+    int elapsedTenths = (int)(ofGetElapsedTimeMillis() / 100);
+    if (elapsedTenths > currentTenths) {
+        currentTenths++;
         ofApp::movePacman(currentDirection);
+        animationIndex++;
+        if (animationIndex > characterGif.pages.size() - 1) animationIndex = 0;
+        coinIndex++;
+        if (coinIndex > coinGif.pages.size() - 1) coinIndex = 0;
     }
 
     // Make an obstacle
-    ofSetColor(50, 50, 50);
-    ofFill();
-    // (sizeof(obstacles) / sizeof(obstacles[0])) is used to get the true size of the array
     for (glm::vec3 obstacle : obstacles) {
         glm::vec3 trueObstaclePosition;
         trueObstaclePosition.x = obstacle.x * size;
         trueObstaclePosition.y = obstacle.y * size;
-        ofDrawRectangle(trueObstaclePosition, size, size);
+        block.draw(trueObstaclePosition, size, size);
+    }
+
+    // The following fixes a bug with RGB transforming to BGR in the library
+    // Source: https://forum.openframeworks.cc/t/ofimage-from-gif-displays-with-blue-tint/22989/6
+    /* fix */ ofSetColor(255, 255, 255, 255);
+    /* fix */ coinSprite = coinGif.pages[coinIndex];
+    /* fix */ ofPixels pix = coinSprite.getPixels();
+    /* fix */ coinSprite.setFromPixels(pix);
+    
+    // Make a coin
+    int coinPadding = 5;
+    for (glm::vec3 coin : coins) {
+        glm::vec3 trueObstaclePosition;
+        trueObstaclePosition.x = coin.x * size + coinPadding;
+        trueObstaclePosition.y = coin.y * size + coinPadding;
+        //coinGif.pages[coinIndex].draw(trueObstaclePosition.x, trueObstaclePosition.y, size, size);
+        coinSprite.draw(trueObstaclePosition.x, trueObstaclePosition.y, size - coinPadding * 2, size - coinPadding * 2);
     }
 
 }
@@ -123,7 +175,7 @@ void ofApp::drawPacman() {
     // The following fixes a bug with RGB transforming to BGR in the library
     // Source: https://forum.openframeworks.cc/t/ofimage-from-gif-displays-with-blue-tint/22989/6
     /* fix */ ofSetColor(255, 255, 255, 255);
-    /* fix */ ofImage img = gifloader.pages[animationIndex];
+    /* fix */ ofImage img = characterGif.pages[animationIndex];
     /* fix */ ofPixels pix = img.getPixels();
     /* fix */ img.setFromPixels(pix);
     glm::vec3 truePacmanPosition;
@@ -203,10 +255,28 @@ void ofApp::movePacman(int direction){
     ) {
         pacmanPosition.x = testPosition.x;
         pacmanPosition.y = testPosition.y;
-    } else {
-//        currentDirection = previousDirection;
     }
+    // Collect coins
+    ofApp::collectCoin();
+    // If you go all the way right, you reach left
+    if (testPosition.x == columns) pacmanPosition.x = 0;
+    if (testPosition.y == rows) pacmanPosition.y = 0;
+    if (testPosition.x == -1) pacmanPosition.x = columns;
+    if (testPosition.y == -1) pacmanPosition.y = rows;
 
+}
+
+//--------------------------------------------------------------
+void ofApp::collectCoin(){
+    int coinIndex = 0;
+    for (glm::vec3 coin : coins) {
+        if (coin.x == pacmanPosition.x && coin.y == pacmanPosition.y) {
+            points++;
+            coins.erase(coins.begin() + coinIndex);
+            break;
+        }
+        coinIndex++;
+    }
 }
 
 //--------------------------------------------------------------

@@ -23,10 +23,13 @@ class ofApp : public ofBaseApp{
 		void gotMessage(ofMessage msg);
         void movePacman(int direction);
         void drawPacman();
-        void createWallLine(char direction, int x, int y, int length);
+        void collectCoin();
+        void createWallLine(char direction, int x, int y, int length, bool obstacle = true);
+        void createCoins(char direction, int x, int y, int length);
         bool hasCollision(glm::vec3 position);
     
         // Library
-        ofxGIF::fiGifLoader gifloader;
+        ofxGIF::fiGifLoader characterGif;
+        ofxGIF::fiGifLoader coinGif;
 		
 };
