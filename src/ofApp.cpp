@@ -57,12 +57,12 @@ void ofApp::setup(){
     ofApp::createWallLine('h', 1, 29, 19);
     
     ofApp::createWallLine('v', 19, 1, 10); //Right Border
-    ofApp::createWallLine('h', 15, 10, 4);
-    ofApp::createWallLine('v', 15, 10, 4);
-    ofApp::createWallLine('h', 15, 13, 4);
-    ofApp::createWallLine('h', 15, 15, 4);
-    ofApp::createWallLine('v', 15, 15, 4);
-    ofApp::createWallLine('h', 15, 18, 4);
+    ofApp::createWallLine('h', 16, 10, 4);
+    ofApp::createWallLine('v', 16, 10, 4);
+    ofApp::createWallLine('h', 16, 13, 4);
+    ofApp::createWallLine('h', 16, 15, 4);
+    ofApp::createWallLine('v', 16, 15, 4);
+    ofApp::createWallLine('h', 16, 18, 4);
     ofApp::createWallLine('v', 19, 18, 12);
     
     ofApp::createWallLine('h', 3, 3, 2); //Upper obstacles
@@ -196,7 +196,7 @@ void ofApp::draw(){
     if (elapsedTenths > currentTenths) {
         currentTenths++;
         ofApp::movePacman(currentDirection);
-        ofApp::moveEnemies();
+        if (currentTenths % 2 == 0) ofApp::moveEnemies();
         animationIndex++;
         if (animationIndex > characterGif.pages.size() - 1) animationIndex = 0;
         coinIndex++;
@@ -308,7 +308,6 @@ void ofApp::moveEnemies() {
         }
         index++;
         
-        std::cout << minDistance << " " << position << " " << enemy.x << " " << enemy.y << "\n";
     }
 }
 
