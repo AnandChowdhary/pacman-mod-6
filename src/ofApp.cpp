@@ -1,6 +1,7 @@
 #include "iostream"
 #include "ofApp.h"
 #include <stdio.h>
+#include <stdlib.h> // For abs();
 #include <vector>
 
 using namespace std;
@@ -9,6 +10,7 @@ glm::vec3 pacmanPosition;
 
 std::vector<glm::vec3> obstacles = {};
 std::vector<glm::vec3> coins = {};
+std::vector<glm::vec3> enemies = {};
 
 int currentDirection, previousDirection;
 int points = 0;
@@ -18,8 +20,10 @@ int columns = 21;
 int currentTenths = 0;
 int animationIndex = 0;
 int coinIndex = 0;
+int enemyIndex = 0;
 
 ofImage coinSprite;
+ofImage enemySprite;
 ofImage block;
 
 //--------------------------------------------------------------
@@ -29,7 +33,7 @@ void ofApp::setup(){
     ofBackground(90, 143, 243);
 
     pacmanPosition.x = 10;
-    pacmanPosition.y = 14;
+    pacmanPosition.y = 13;
 
     currentDirection = 1;
     previousDirection = 1;
@@ -37,6 +41,7 @@ void ofApp::setup(){
     // Load images
     characterGif.load("images/mario-walking.gif");
     coinGif.load("images/coin.gif");
+    enemyGif.load("images/goomba.gif");
     block.load("images/block.png");
     
     // Add obstacles
@@ -69,6 +74,50 @@ void ofApp::setup(){
     ofApp::createWallLine('h', 12, 4, 3);
     ofApp::createWallLine('h', 16, 3, 2);
     ofApp::createWallLine('h', 16, 4, 2);
+    
+    ofApp::createWallLine('h', 3, 6, 2); //Second obstacles
+    ofApp::createWallLine('h', 3, 8, 2);
+    ofApp::createWallLine('v', 6, 6, 7);
+    ofApp::createWallLine('h', 6, 9, 3);
+    ofApp::createWallLine('h', 8, 6, 5);
+    ofApp::createWallLine('v', 10, 6, 4);
+    ofApp::createWallLine('v', 14, 6, 7);
+    ofApp::createWallLine('h', 12, 9, 3);
+    ofApp::createWallLine('h', 16, 6, 2);
+    ofApp::createWallLine('h', 16, 8, 2);
+    
+    
+    ofApp::createWallLine('h', 8, 11, 2); //Enemy case (spookies)
+    ofApp::createWallLine('h', 11, 11, 2);
+    ofApp::createWallLine('v', 8, 11, 5);
+    ofApp::createWallLine('v', 12, 11, 5);
+    ofApp::createWallLine('h', 8, 15, 5);
+    
+    
+    ofApp::createWallLine('v', 6, 14, 4); //Just under the case
+    ofApp::createWallLine('v', 14, 14, 4);
+    ofApp::createWallLine('h', 8, 17, 5);
+    ofApp::createWallLine('v', 10, 17, 4);
+    
+    ofApp::createWallLine('h', 3, 20, 2); //down left
+    ofApp::createWallLine('v', 4, 20, 4);
+    ofApp::createWallLine('h', 2, 25, 1);
+    ofApp::createWallLine('v', 4, 25, 1);
+    ofApp::createWallLine('h', 6, 21, 3);
+    ofApp::createWallLine('v', 8, 21, 5);
+    ofApp::createWallLine('v', 6, 23, 5);
+    ofApp::createWallLine('h', 3, 27, 6);
+    
+    ofApp::createWallLine('v', 10, 22, 6); //Down Middle verticle line
+    
+    ofApp::createWallLine('h', 16, 20, 2); //down right
+    ofApp::createWallLine('v', 16, 20, 4);
+    ofApp::createWallLine('h', 18, 25, 1);
+    ofApp::createWallLine('v', 16, 25, 1);
+    ofApp::createWallLine('h', 12, 21, 3);
+    ofApp::createWallLine('v', 12, 21, 5);
+    ofApp::createWallLine('v', 14, 23, 5);
+    ofApp::createWallLine('h', 12, 27, 6);
 
     for (int i = 2; i < columns - 2; i++) {
         for (int j = 2; j < rows - 2; j++) {
@@ -76,7 +125,7 @@ void ofApp::setup(){
             for (glm::vec3 obstacle : obstacles) {
                 if (obstacle.x == i && obstacle.y == j) hasSomething = true;
             }
-            if (!hasSomething && (rand() % 3 + 1) == 3) {
+            if (!hasSomething && (rand() % 5 + 1) == 3) {
                 glm::vec3 newCoin;
                 newCoin.x = i;
                 newCoin.y = j;
@@ -84,6 +133,15 @@ void ofApp::setup(){
             }
         }
     }
+    
+    ofApp:createEnemy(18, 28);
+}
+
+void ofApp::createEnemy(int x, int y) {
+    glm::vec3 enemyPosition;
+    enemyPosition.x = x;
+    enemyPosition.y = y;
+    enemies.push_back(enemyPosition);
 }
 
 //--------------------------------------------------------------
@@ -138,10 +196,13 @@ void ofApp::draw(){
     if (elapsedTenths > currentTenths) {
         currentTenths++;
         ofApp::movePacman(currentDirection);
+        ofApp::moveEnemies();
         animationIndex++;
         if (animationIndex > characterGif.pages.size() - 1) animationIndex = 0;
         coinIndex++;
         if (coinIndex > coinGif.pages.size() - 1) coinIndex = 0;
+        enemyIndex++;
+        if (enemyIndex > enemyGif.pages.size() - 1) enemyIndex = 0;
     }
 
     // Make an obstacle
@@ -158,17 +219,97 @@ void ofApp::draw(){
     /* fix */ coinSprite = coinGif.pages[coinIndex];
     /* fix */ ofPixels pix = coinSprite.getPixels();
     /* fix */ coinSprite.setFromPixels(pix);
+    /* fix */ enemySprite = enemyGif.pages[enemyIndex];
+    /* fix */ ofPixels pix2 = enemySprite.getPixels();
+    /* fix */ enemySprite.setFromPixels(pix2);
     
     // Make a coin
     int coinPadding = 5;
     for (glm::vec3 coin : coins) {
-        glm::vec3 trueObstaclePosition;
-        trueObstaclePosition.x = coin.x * size + coinPadding;
-        trueObstaclePosition.y = coin.y * size + coinPadding;
-        //coinGif.pages[coinIndex].draw(trueObstaclePosition.x, trueObstaclePosition.y, size, size);
-        coinSprite.draw(trueObstaclePosition.x, trueObstaclePosition.y, size - coinPadding * 2, size - coinPadding * 2);
+        glm::vec3 trueCoinPosition;
+        trueCoinPosition.x = coin.x * size + coinPadding;
+        trueCoinPosition.y = coin.y * size + coinPadding;
+        coinSprite.draw(trueCoinPosition.x, trueCoinPosition.y, size - coinPadding * 2, size - coinPadding * 2);
+    }
+    
+    // Make an enemy
+    for (glm::vec3 enemy : enemies) {
+        glm::vec3 trueEnemyPosition;
+        trueEnemyPosition.x = enemy.x * size;
+        trueEnemyPosition.y = enemy.y * size;
+        enemySprite.draw(trueEnemyPosition.x, trueEnemyPosition.y, size, size);
     }
 
+}
+
+int ofApp::manhattanDistance(glm::vec3 A, glm::vec3 B) {
+    return abs(A.y - B.y) + abs(A.x - B.x);
+}
+
+void ofApp::moveEnemies() {
+    int minDistance = rows + columns;
+    int position = -1;
+    int index = 0;
+    for (glm::vec3 enemy : enemies) {
+
+        glm::vec3 up;
+        up.x = enemy.x;
+        up.y = enemy.y - 1;
+        int manhattanDistanceUp = manhattanDistance(pacmanPosition, up);
+        if (!hasCollision(up) && manhattanDistanceUp <= minDistance) {
+            minDistance = manhattanDistanceUp;
+            position = 0;
+        }
+        
+        glm::vec3 right;
+        right.x = enemy.x + 1;
+        right.y = enemy.y;
+        int manhattanDistanceRight = manhattanDistance(pacmanPosition, right);
+        if (!hasCollision(right) && manhattanDistanceRight <= minDistance) {
+            minDistance = manhattanDistanceRight;
+            position = 1;
+        }
+        
+        glm::vec3 down;
+        down.x = enemy.x;
+        down.y = enemy.y + 1;
+        int manhattanDistanceDown = manhattanDistance(pacmanPosition, down);
+        if (!hasCollision(down) && manhattanDistanceDown <= minDistance) {
+            minDistance = manhattanDistanceDown;
+            position = 2;
+        }
+        
+        glm::vec3 left;
+        left.x = enemy.x - 1;
+        left.y = enemy.y;
+        int manhattanDistanceLeft = manhattanDistance(pacmanPosition, left);
+        if (!hasCollision(left) && manhattanDistanceLeft <= minDistance) {
+            minDistance = manhattanDistanceLeft;
+            position = 3;
+        }
+
+        switch (position) {
+            case 0:
+                enemies[index].x = up.x;
+                enemies[index].y = up.y;
+                break;
+            case 1:
+                enemies[index].x = right.x;
+                enemies[index].y = right.y;
+                break;
+            case 2:
+                enemies[index].x = down.x;
+                enemies[index].y = down.y;
+                break;
+            case 3:
+                enemies[index].x = left.x;
+                enemies[index].y = left.y;
+                break;
+        }
+        index++;
+        
+        std::cout << minDistance << " " << position << " " << enemy.x << " " << enemy.y << "\n";
+    }
 }
 
 void ofApp::drawPacman() {
@@ -215,6 +356,8 @@ void ofApp::keyPressed(int key){
 //--------------------------------------------------------------
 bool ofApp::hasCollision(glm::vec3 position){
     int collisionDetected = false;
+    if (position.x < 0) collisionDetected = true;
+    if (position.y < 0) collisionDetected = true;
     for (glm::vec3 obstacle : obstacles) {
         if (obstacle.x == position.x && obstacle.y == position.y) collisionDetected = true;
     }
@@ -240,7 +383,7 @@ void ofApp::movePacman(int direction){
             testPosition.x = pacmanPosition.x;
             testPosition.y = pacmanPosition.y + 1;
             break;
-        default:
+        case 3:
             // Move Pacman left
             testPosition.x = pacmanPosition.x - 1;
             testPosition.y = pacmanPosition.y;
@@ -296,7 +439,8 @@ void ofApp::mousePressed(int x, int y, int button){
 
 //--------------------------------------------------------------
 void ofApp::mouseReleased(int x, int y, int button){
-
+    // Know which "block" you've pressed on (for development)
+    std::cout << (x / size) << " " << (y / size) << "\n";
 }
 
 //--------------------------------------------------------------

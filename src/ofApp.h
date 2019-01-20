@@ -24,12 +24,16 @@ class ofApp : public ofBaseApp{
         void movePacman(int direction);
         void drawPacman();
         void collectCoin();
+        void moveEnemies();
         void createWallLine(char direction, int x, int y, int length, bool obstacle = true);
         void createCoins(char direction, int x, int y, int length);
         bool hasCollision(glm::vec3 position);
+        int manhattanDistance(glm::vec3 A, glm::vec3 B);
+        void createEnemy(int x, int y);
     
         // Library
         ofxGIF::fiGifLoader characterGif;
         ofxGIF::fiGifLoader coinGif;
+        ofxGIF::fiGifLoader enemyGif;
 		
 };
