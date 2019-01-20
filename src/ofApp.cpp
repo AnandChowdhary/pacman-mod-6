@@ -13,22 +13,45 @@ std::vector<glm::vec3> coins = {};
 std::vector<glm::vec3> enemies = {};
 
 int currentDirection, previousDirection;
-int points = 0;
-int size = 25;
-int rows = 31;
-int columns = 21;
-int currentTenths = 0;
-int animationIndex = 0;
-int coinIndex = 0;
-int enemyIndex = 0;
+int screen;
+int points;
+int size;
+int rows;
+int columns;
+int currentTenths;
+int animationIndex;
+int coinIndex;
+int enemyIndex;
+int characterOption;
 
 ofImage coinSprite;
 ofImage enemySprite;
 ofImage block;
+ofImage screenHome1;
+ofImage screenHome2;
+ofImage screenHome3;
+ofImage screenScore;
 
 //--------------------------------------------------------------
 void ofApp::setup(){
     
+    // Initialize variables
+    screen = 0;
+    points = 0;
+    size = 25;
+    rows = 31;
+    columns = 21;
+    currentTenths = (int)(ofGetElapsedTimeMillis() / 100);
+    animationIndex = 0;
+    coinIndex = 0;
+    enemyIndex = 0;
+    characterOption = 1;
+    
+    // Empty vectors
+    obstacles.clear();
+    enemies.clear();
+    coins.clear();
+
     // Background color
     ofBackground(90, 143, 243);
 
@@ -43,81 +66,18 @@ void ofApp::setup(){
     coinGif.load("images/coin.gif");
     enemyGif.load("images/goomba.gif");
     block.load("images/block.png");
+    screenHome1.load("screens/option-1.png");
+    screenHome2.load("screens/option-2.png");
+    screenHome3.load("screens/option-3.png");
+    screenScore.load("screens/end.png");
     
     // Add obstacles
-    ofApp::createWallLine('h', 1, 1, 19); //Upper wall
-    ofApp::createWallLine('v', 1, 1, 10); //Left Border
-    ofApp::createWallLine('h', 1, 10, 4);
-    ofApp::createWallLine('v', 4, 10, 4);
-    ofApp::createWallLine('h', 1, 13, 4);
-    ofApp::createWallLine('h', 1, 15, 4);
-    ofApp::createWallLine('v', 4, 15, 4);
-    ofApp::createWallLine('h', 1, 18, 4);
-    ofApp::createWallLine('v', 1, 18, 12);
-    ofApp::createWallLine('h', 1, 29, 19);
+    int obstacleData[] = { 0, 1, 1, 19, 1, 1, 1, 10, 0, 1, 10, 4, 1, 4, 10, 4, 0, 1, 13, 4, 0, 1, 15, 4, 1, 4, 15, 4, 0, 1, 18, 4, 1, 1, 18, 12, 0, 1, 29, 19, 1, 19, 1, 10, 0, 16, 10, 4, 1, 16, 10, 4, 0, 16, 13, 4, 0, 16, 15, 4, 1, 16, 15, 4, 0, 16, 18, 4, 1, 19, 18, 12, 0, 3, 3, 2, 0, 3, 4, 2, 0, 6, 3, 3, 0, 6, 4, 3, 1, 10, 2, 3, 0, 12, 3, 3, 0, 12, 4, 3, 0, 16, 3, 2, 0, 16, 4, 2, 0, 3, 6, 2, 0, 3, 8, 2, 1, 6, 6, 7, 0, 6, 9, 3, 0, 8, 6, 5, 1, 10, 6, 4, 1, 14, 6, 7, 0, 12, 9, 3, 0, 16, 6, 2, 0, 16, 8, 2, 0, 8, 11, 2, 0, 11, 11, 2, 1, 8, 11, 5, 1, 12, 11, 5, 0, 8, 15, 5, 1, 6, 14, 4, 1, 14, 14, 4, 0, 8, 17, 5, 1, 10, 17, 4, 0, 3, 20, 2, 1, 4, 20, 4, 0, 2, 25, 1, 1, 4, 25, 1, 0, 6, 21, 3, 1, 8, 21, 5, 1, 6, 23, 5, 0, 3, 27, 6, 1, 10, 22, 6, 0, 16, 20, 2, 1, 16, 20, 4, 0, 18, 25, 1, 1, 16, 25, 1, 0, 12, 21, 3, 1, 12, 21, 5, 1, 14, 23, 5, 0, 12, 27, 6 };
     
-    ofApp::createWallLine('v', 19, 1, 10); //Right Border
-    ofApp::createWallLine('h', 16, 10, 4);
-    ofApp::createWallLine('v', 16, 10, 4);
-    ofApp::createWallLine('h', 16, 13, 4);
-    ofApp::createWallLine('h', 16, 15, 4);
-    ofApp::createWallLine('v', 16, 15, 4);
-    ofApp::createWallLine('h', 16, 18, 4);
-    ofApp::createWallLine('v', 19, 18, 12);
-    
-    ofApp::createWallLine('h', 3, 3, 2); //Upper obstacles
-    ofApp::createWallLine('h', 3, 4, 2);
-    ofApp::createWallLine('h', 6, 3, 3);
-    ofApp::createWallLine('h', 6, 4, 3);
-    ofApp::createWallLine('v', 10, 2, 3);
-    ofApp::createWallLine('h', 12, 3, 3);
-    ofApp::createWallLine('h', 12, 4, 3);
-    ofApp::createWallLine('h', 16, 3, 2);
-    ofApp::createWallLine('h', 16, 4, 2);
-    
-    ofApp::createWallLine('h', 3, 6, 2); //Second obstacles
-    ofApp::createWallLine('h', 3, 8, 2);
-    ofApp::createWallLine('v', 6, 6, 7);
-    ofApp::createWallLine('h', 6, 9, 3);
-    ofApp::createWallLine('h', 8, 6, 5);
-    ofApp::createWallLine('v', 10, 6, 4);
-    ofApp::createWallLine('v', 14, 6, 7);
-    ofApp::createWallLine('h', 12, 9, 3);
-    ofApp::createWallLine('h', 16, 6, 2);
-    ofApp::createWallLine('h', 16, 8, 2);
-    
-    
-    ofApp::createWallLine('h', 8, 11, 2); //Enemy case (spookies)
-    ofApp::createWallLine('h', 11, 11, 2);
-    ofApp::createWallLine('v', 8, 11, 5);
-    ofApp::createWallLine('v', 12, 11, 5);
-    ofApp::createWallLine('h', 8, 15, 5);
-    
-    
-    ofApp::createWallLine('v', 6, 14, 4); //Just under the case
-    ofApp::createWallLine('v', 14, 14, 4);
-    ofApp::createWallLine('h', 8, 17, 5);
-    ofApp::createWallLine('v', 10, 17, 4);
-    
-    ofApp::createWallLine('h', 3, 20, 2); //down left
-    ofApp::createWallLine('v', 4, 20, 4);
-    ofApp::createWallLine('h', 2, 25, 1);
-    ofApp::createWallLine('v', 4, 25, 1);
-    ofApp::createWallLine('h', 6, 21, 3);
-    ofApp::createWallLine('v', 8, 21, 5);
-    ofApp::createWallLine('v', 6, 23, 5);
-    ofApp::createWallLine('h', 3, 27, 6);
-    
-    ofApp::createWallLine('v', 10, 22, 6); //Down Middle verticle line
-    
-    ofApp::createWallLine('h', 16, 20, 2); //down right
-    ofApp::createWallLine('v', 16, 20, 4);
-    ofApp::createWallLine('h', 18, 25, 1);
-    ofApp::createWallLine('v', 16, 25, 1);
-    ofApp::createWallLine('h', 12, 21, 3);
-    ofApp::createWallLine('v', 12, 21, 5);
-    ofApp::createWallLine('v', 14, 23, 5);
-    ofApp::createWallLine('h', 12, 27, 6);
+    // sizeof(arr)/sizeof(arr[0]) returns the true size of the array
+    for (int i = 0; i < sizeof(obstacleData) / sizeof(obstacleData[0]); i += 4) {
+        ofApp::createWallLine((obstacleData[i] == 0 ? 'h' : 'v'), obstacleData[i + 1], obstacleData[i + 2], obstacleData[i + 3]);
+    }
 
     for (int i = 2; i < columns - 2; i++) {
         for (int j = 2; j < rows - 2; j++) {
@@ -174,6 +134,44 @@ void ofApp::update(){
 //--------------------------------------------------------------
 void ofApp::draw(){
 
+    switch (screen) {
+        case 1:
+            ofApp::drawGame();
+            break;
+        default:
+            ofApp::drawImageScreen(screen);
+            break;
+    }
+
+}
+
+void ofApp::drawImageScreen(int index) {
+    if (index == 2) {
+        screenScore.draw(0, 0);
+        string pointsString = std::to_string(points);
+        for (int i = 0; i < pointsString.length(); i++) {
+            ofImage number;
+            // Convert char to string and display image
+            number.load("numbers/" + string(1, pointsString.at(i)) + ".png");
+            number.draw(200 + 64 * i, 305);
+        }
+    } else {
+        switch (characterOption) {
+            case 1:
+                screenHome1.draw(0, 0);
+                break;
+            case 2:
+                screenHome2.draw(0, 0);
+                break;
+            case 3:
+                screenHome3.draw(0, 0);
+                break;
+        }
+    }
+}
+
+void ofApp::drawGame(){
+    
     // Draw grid
     ofSetColor(75, 121, 209);
     ofSetLineWidth(1);
@@ -186,10 +184,10 @@ void ofApp::draw(){
             ofDrawRectangle(position, size, size);
         }
     }
-
+    
     // Draw Pacman
     ofApp::drawPacman();
-
+    
     // Move Pacman, ten times per second
     // ofGetElapsedTimef(); returns a float, convert it to int
     int elapsedTenths = (int)(ofGetElapsedTimeMillis() / 100);
@@ -204,7 +202,7 @@ void ofApp::draw(){
         enemyIndex++;
         if (enemyIndex > enemyGif.pages.size() - 1) enemyIndex = 0;
     }
-
+    
     // Make an obstacle
     for (glm::vec3 obstacle : obstacles) {
         glm::vec3 trueObstaclePosition;
@@ -212,7 +210,7 @@ void ofApp::draw(){
         trueObstaclePosition.y = obstacle.y * size;
         block.draw(trueObstaclePosition, size, size);
     }
-
+    
     // The following fixes a bug with RGB transforming to BGR in the library
     // Source: https://forum.openframeworks.cc/t/ofimage-from-gif-displays-with-blue-tint/22989/6
     /* fix */ ofSetColor(255, 255, 255, 255);
@@ -239,7 +237,7 @@ void ofApp::draw(){
         trueEnemyPosition.y = enemy.y * size;
         enemySprite.draw(trueEnemyPosition.x, trueEnemyPosition.y, size, size);
     }
-
+    
 }
 
 int ofApp::manhattanDistance(glm::vec3 A, glm::vec3 B) {
@@ -306,8 +304,15 @@ void ofApp::moveEnemies() {
                 enemies[index].y = left.y;
                 break;
         }
+
+        // Check for collisions
+        if (
+            enemies[index].x == pacmanPosition.x &&
+            enemies[index].y == pacmanPosition.y
+        ) screen = 2;
+
         index++;
-        
+
     }
 }
 
@@ -331,24 +336,54 @@ void ofApp::keyReleased(int key){
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
-    previousDirection = currentDirection;
-    switch (key) {
-        case 57356:
-            // Move left
-            currentDirection = 3;
-            break;
-        case 57357:
-            // Move up
-            currentDirection = 0;
-            break;
-        case 57358:
-            // Move right
-            currentDirection = 1;
-            break;
-        case 57359:
-            // Move down
-            currentDirection = 2;
-            break;
+    if (screen == 1) {
+        previousDirection = currentDirection;
+        switch (key) {
+            case 57356:
+                // Move left
+                currentDirection = 3;
+                break;
+            case 57357:
+                // Move up
+                currentDirection = 0;
+                break;
+            case 57358:
+                // Move right
+                currentDirection = 1;
+                break;
+            case 57359:
+                // Move down
+                currentDirection = 2;
+                break;
+        }
+    } else if (screen == 0) {
+        switch (key) {
+            case 57356:
+                // Move left
+                if (characterOption != 1) {
+                    characterOption -= 1;
+                } else {
+                    characterOption = 3;
+                }
+                break;
+            case 57358:
+                // Move right
+                if (characterOption != 3) {
+                    characterOption += 1;
+                } else {
+                    characterOption = 1;
+                }
+                break;
+            case 13: // Enter
+                screen = 1;
+                break;
+            case 32: // Spacebar
+                screen = 1;
+                break;
+        }
+    } else if (screen == 2) {
+        ofApp::setup();
+        screen = 0;
     }
 }
 
