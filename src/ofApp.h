@@ -32,8 +32,9 @@ class ofApp : public ofBaseApp{
         bool hasCollision(glm::vec3 position);
         int manhattanDistance(glm::vec3 A, glm::vec3 B);
         void createEnemy(int x, int y);
+        string jsonValueFromKey(string json, string key);
     
-        // Library
+        // Libraries
         ofxGIF::fiGifLoader characterGif;
         ofxGIF::fiGifLoader coinGif;
         ofxGIF::fiGifLoader enemyGif;

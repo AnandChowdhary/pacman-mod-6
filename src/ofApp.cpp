@@ -32,6 +32,8 @@ ofImage screenHome2;
 ofImage screenHome3;
 ofImage screenScore;
 
+ofSerial mySerial;
+
 //--------------------------------------------------------------
 void ofApp::setup(){
     
@@ -45,11 +47,17 @@ void ofApp::setup(){
     screenHome2.load("screens/option-2.png");
     screenHome3.load("screens/option-3.png");
     screenScore.load("screens/end.png");
+    
+    if (mySerial.setup()) {
+        std::cout << "Setup!\n";
+    } else {
+        std::cout << "Not setup.\n";
+    }
 
 }
 
 void ofApp::setupGame() {
-    
+
     // Initialize variables
     screen = 0;
     points = 0;
@@ -152,10 +160,57 @@ void ofApp::createCoins(char direction, int x, int y, int length){
 
 //--------------------------------------------------------------
 void ofApp::update(){
+
+}
+
+string ofApp::jsonValueFromKey(string json, string key) {
+    return key;
 }
 
 //--------------------------------------------------------------
 void ofApp::draw(){
+
+    bool completed = true;
+    bool jsonStringStarted = false;
+    bool jsonStringEnded = false;
+    string jsonString = "";
+    while (!jsonStringEnded) {
+        if (mySerial.available() > 0) {
+            char a = mySerial.readByte();
+            if (a != OF_SERIAL_NO_DATA && a != OF_SERIAL_ERROR) {
+                if (a == '{') {
+                    jsonStringStarted = true;
+                }
+                if (jsonStringStarted) jsonString += a;
+            }
+            if (a == '}') jsonStringEnded = true;
+        }
+    }
+    
+    if (jsonString.length() > 5) {
+        std::cout << "Anand " << jsonValueFromKey(jsonString, "currentPosition");
+    }
+
+//    int bytesRequired = 150;
+//    unsigned char bytes[bytesRequired];
+//    char lastCharacter = ' ';
+//    int bytesRemaining = bytesRequired;
+//    while (bytesRemaining > 0 && lastCharacter != '}') {
+//        if (mySerial.available() > 0) {
+//            int bytesArrayOffset = bytesRequired - bytesRemaining;
+//            int result = mySerial.readBytes(&bytes[bytesArrayOffset], bytesRemaining);
+//            lastCharacter = bytes[bytesArrayOffset];
+//            if (result != OF_SERIAL_ERROR && result != OF_SERIAL_NO_DATA) {
+//                bytesRemaining -= result;
+//                if (bytes[bytesArrayOffset] == '}') bytesRemaining = 0;
+//            }
+//        }
+//    }
+//    if (bytes[0] == '{' && bytes[1] == ' ' && bytes['2'] == '"') {
+//        //std::cout << bytes << "XYZ";
+//    } else {
+//        std::cout << "_ _ _ _ _ " << bytes << "_ _ _ _ \n\n\n";
+//    }
 
     switch (screen) {
         case 1:
@@ -393,7 +448,7 @@ void ofApp::keyPressed(int key){
                 screen = 1;
                 break;
         }
-    } else if (screen == 2) {
+    } else if (screen == 2 && (key == 13 || key == 32)) {
         ofApp::setup();
         screen = 0;
     }
