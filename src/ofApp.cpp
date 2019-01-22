@@ -33,6 +33,8 @@ ofImage screenHome3;
 ofImage screenScore;
 
 ofSerial mySerial;
+bool previousButtonState = false;
+string previousDirectionState = "unknown";
 
 //--------------------------------------------------------------
 void ofApp::setup(){
@@ -80,7 +82,6 @@ void ofApp::setupGame() {
     previousDirection = 1;
     
     // Load images
-    std::cout << characterOption << "\n";
     if (characterOption == 3) {
         ofBackground(183, 243, 245);
         characterGif.load("images/bird.gif");
@@ -91,7 +92,7 @@ void ofApp::setupGame() {
         ofBackground(247, 213, 139);
         characterGif.load("images/ash.gif");
         coinGif.load("images/pokeball.gif");
-        enemyGif.load("images/goomba.gif");
+        enemyGif.load("images/dragon");
         block.load("images/tree.png");
     } else {
         ofBackground(90, 143, 243);
@@ -164,7 +165,14 @@ void ofApp::update(){
 }
 
 string ofApp::jsonValueFromKey(string json, string key) {
-    return key;
+    try {
+        std::size_t position = json.find(key);
+        string tempTerm = json.substr((position + key.size() + 4), json.size() - position - key.size() - 4);
+        std::size_t quotePosition = json.find("\"");
+        return tempTerm.substr(0, 2);
+    } catch (...) {
+        return "undefined";
+    }
 }
 
 //--------------------------------------------------------------
@@ -187,30 +195,31 @@ void ofApp::draw(){
         }
     }
     
-    if (jsonString.length() > 5) {
-        std::cout << "Anand " << jsonValueFromKey(jsonString, "currentPosition");
-    }
-
-//    int bytesRequired = 150;
-//    unsigned char bytes[bytesRequired];
-//    char lastCharacter = ' ';
-//    int bytesRemaining = bytesRequired;
-//    while (bytesRemaining > 0 && lastCharacter != '}') {
-//        if (mySerial.available() > 0) {
-//            int bytesArrayOffset = bytesRequired - bytesRemaining;
-//            int result = mySerial.readBytes(&bytes[bytesArrayOffset], bytesRemaining);
-//            lastCharacter = bytes[bytesArrayOffset];
-//            if (result != OF_SERIAL_ERROR && result != OF_SERIAL_NO_DATA) {
-//                bytesRemaining -= result;
-//                if (bytes[bytesArrayOffset] == '}') bytesRemaining = 0;
-//            }
-//        }
-//    }
-//    if (bytes[0] == '{' && bytes[1] == ' ' && bytes['2'] == '"') {
-//        //std::cout << bytes << "XYZ";
-//    } else {
-//        std::cout << "_ _ _ _ _ " << bytes << "_ _ _ _ \n\n\n";
-//    }
+    try {
+        if (jsonValueFromKey(jsonString, "currentPosition") == "up" && previousDirectionState != "up") {
+            ofApp::keyPressed(57357);
+            previousDirectionState = "up";
+        } else if (jsonValueFromKey(jsonString, "currentPosition") == "do" && previousDirectionState != "do") {
+            ofApp::keyPressed(57359);
+            previousDirectionState = "do";
+        } else if (jsonValueFromKey(jsonString, "currentPosition") == "le" && previousDirectionState != "le") {
+            ofApp::keyPressed(57356);
+            previousDirectionState = "le";
+        } else if (jsonValueFromKey(jsonString, "currentPosition") == "ri" && previousDirectionState != "ri") {
+            ofApp::keyPressed(57358);
+            previousDirectionState = "ri";
+        } else if (jsonValueFromKey(jsonString, "currentPosition") == "no") {
+            previousDirectionState = "no";
+        }
+        bool currentButtonState = jsonValueFromKey(jsonString, "buttonStatus") == "pr";
+        if (currentButtonState && currentButtonState != previousButtonState) {
+            // Button has been pressed
+            ofApp::keyPressed(13);
+            previousButtonState = true;
+        } else {
+            previousButtonState = false;
+        }
+    } catch (...) {}
 
     switch (screen) {
         case 1:

@@ -17,21 +17,21 @@ void setup() {
 void loop() {
   String jsonString = "{ \"currentPosition\": ";
   if (digitalRead(limitSwitch1) == 0) {
-    jsonString += "\"down\"";
+    jsonString += "\"do\"";
   } else if (digitalRead(limitSwitch2) == 0) {
-    jsonString += "\"left\"";
+    jsonString += "\"le\"";
   } else if (digitalRead(limitSwitch3) == 0) {
     jsonString += "\"up\"";
   } else if (digitalRead(limitSwitch4) == 0) {
-    jsonString += "\"right\"";
+    jsonString += "\"ri\"";
   } else {
-    jsonString += "\"none\"";
+    jsonString += "\"no\"";
   }
-  jsonString += ", \"buttonPressed\": ";
+  jsonString += ", \"buttonStatus\": ";
   if (digitalRead(buttonPin) == 1) {
-    jsonString += "true";
+    jsonString += "\"pr\"";
   } else {
-    jsonString += "false";
+    jsonString += "\"xx\"";
   }
   jsonString += " }";
   Serial.println(jsonString);
