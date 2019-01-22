@@ -2,6 +2,7 @@
 
 #include "ofMain.h"
 #include "ofxGif.h"
+#include "ofxRestartOFApp.h"
 
 class ofApp : public ofBaseApp{
 
@@ -27,6 +28,7 @@ class ofApp : public ofBaseApp{
         void drawPacman();
         void collectCoin();
         void moveEnemies();
+        void moveEnemyGreedy(glm::vec3 enemy, int index);
         void createWallLine(char direction, int x, int y, int length, bool obstacle = true);
         void createCoins(char direction, int x, int y, int length);
         bool hasCollision(glm::vec3 position);
@@ -34,9 +36,15 @@ class ofApp : public ofBaseApp{
         void createEnemy(int x, int y);
         string jsonValueFromKey(string json, string key);
     
+        // Configuration constants
+        const int size = 25;
+        const int rows = 31;
+        const int columns = 21;
+    
         // Libraries
         ofxGIF::fiGifLoader characterGif;
         ofxGIF::fiGifLoader coinGif;
         ofxGIF::fiGifLoader enemyGif;
+        ofxRestartOFApp restartApp;
 		
 };

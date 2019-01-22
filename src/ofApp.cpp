@@ -13,47 +13,38 @@ std::vector<glm::vec3> coins = {};
 std::vector<glm::vec3> enemies = {};
 
 int currentDirection, previousDirection;
-int screen;
+int currentScreen;
 int points;
-int size;
-int rows;
-int columns;
 int currentTenths;
 int animationIndex;
 int coinIndex;
 int enemyIndex;
-int characterOption;
+int selectedCharacter;
 
-ofImage coinSprite;
-ofImage enemySprite;
-ofImage block;
-ofImage screenHome1;
-ofImage screenHome2;
-ofImage screenHome3;
-ofImage screenScore;
+ofImage imageSprites[3];
+ofImage homeScreens[4];
 
 ofSerial mySerial;
 bool previousButtonState = false;
-string previousDirectionState = "unknown";
+string previousDirectionState = "undefined";
 
 //--------------------------------------------------------------
 void ofApp::setup(){
     
     // Initialize variables
-    screen = 0;
-    characterOption = 1;
-    size = 25;
+    currentScreen = 0;
+    selectedCharacter = 1;
     
     // Load screen images
-    screenHome1.load("screens/option-1.png");
-    screenHome2.load("screens/option-2.png");
-    screenHome3.load("screens/option-3.png");
-    screenScore.load("screens/end.png");
+    homeScreens[0].load("screens/option-1.png");
+    homeScreens[1].load("screens/option-2.png");
+    homeScreens[2].load("screens/option-3.png");
+    homeScreens[3].load("screens/end.png");
     
     if (mySerial.setup()) {
-        std::cout << "Setup!\n";
+        std::cout << "Serial has been set up!\n";
     } else {
-        std::cout << "Not setup.\n";
+        std::cout << "Please check serial port.\n";
     }
 
 }
@@ -61,10 +52,8 @@ void ofApp::setup(){
 void ofApp::setupGame() {
 
     // Initialize variables
-    screen = 0;
+    currentScreen = 0;
     points = 0;
-    rows = 31;
-    columns = 21;
     currentTenths = (int)(ofGetElapsedTimeMillis() / 100);
     animationIndex = 0;
     coinIndex = 0;
@@ -75,31 +64,31 @@ void ofApp::setupGame() {
     enemies.clear();
     coins.clear();
     
-    pacmanPosition.x = 10;
-    pacmanPosition.y = 13;
+    pacmanPosition.x = 2;
+    pacmanPosition.y = 28;
     
     currentDirection = 1;
     previousDirection = 1;
     
     // Load images
-    if (characterOption == 3) {
+    if (selectedCharacter == 3) { // Angry Birds theme
         ofBackground(183, 243, 245);
         characterGif.load("images/bird.gif");
         coinGif.load("images/egg.gif");
         enemyGif.load("images/pig.gif");
-        block.load("images/log.png");
-    } if (characterOption == 1) {
+        imageSprites[3].load("images/log.png");
+    } if (selectedCharacter == 1) { // Pokemon theme
         ofBackground(247, 213, 139);
         characterGif.load("images/ash.gif");
         coinGif.load("images/pokeball.gif");
-        enemyGif.load("images/dragon");
-        block.load("images/tree.png");
-    } else {
+        enemyGif.load("images/dragon.gif");
+        imageSprites[3].load("images/tree.png");
+    } else if (selectedCharacter == 2) { // Mario theme
         ofBackground(90, 143, 243);
         characterGif.load("images/mario-walking.gif");
         coinGif.load("images/coin.gif");
         enemyGif.load("images/goomba.gif");
-        block.load("images/block.png");
+        imageSprites[3].load("images/block.png");
     }
     
     // Add obstacles
@@ -110,12 +99,15 @@ void ofApp::setupGame() {
         ofApp::createWallLine((obstacleData[i] == 0 ? 'h' : 'v'), obstacleData[i + 1], obstacleData[i + 2], obstacleData[i + 3]);
     }
     
+    // Leave a padding of 2 blocks for coins
     for (int i = 2; i < columns - 2; i++) {
         for (int j = 2; j < rows - 2; j++) {
+            // Check if there's an obstacle in this block
             int hasSomething = false;
             for (glm::vec3 obstacle : obstacles) {
                 if (obstacle.x == i && obstacle.y == j) hasSomething = true;
             }
+            // If there isn't create a coin randomly (with probability 1 in 5)
             if (!hasSomething && (rand() % 5 + 1) == 3) {
                 glm::vec3 newCoin;
                 newCoin.x = i;
@@ -124,8 +116,11 @@ void ofApp::setupGame() {
             }
         }
     }
-    
-    ofApp:createEnemy(18, 28);
+
+    // Create a bunch of enemies
+    ofApp::createEnemy(7, 10);
+    ofApp::createEnemy(13, 10);
+    ofApp::createEnemy(10, 10);
     
 }
 
@@ -221,12 +216,12 @@ void ofApp::draw(){
         }
     } catch (...) {}
 
-    switch (screen) {
+    switch (currentScreen) {
         case 1:
             ofApp::drawGame();
             break;
         default:
-            ofApp::drawImageScreen(screen);
+            ofApp::drawImageScreen(currentScreen);
             break;
     }
 
@@ -234,7 +229,7 @@ void ofApp::draw(){
 
 void ofApp::drawImageScreen(int index) {
     if (index == 2) {
-        screenScore.draw(0, 0);
+        homeScreens[3].draw(0, 0);
         string pointsString = std::to_string(points);
         for (int i = 0; i < pointsString.length(); i++) {
             ofImage number;
@@ -243,15 +238,15 @@ void ofApp::drawImageScreen(int index) {
             number.draw(200 + 64 * i, 305);
         }
     } else {
-        switch (characterOption) {
+        switch (selectedCharacter) {
             case 1:
-                screenHome1.draw(0, 0);
+                homeScreens[0].draw(0, 0);
                 break;
             case 2:
-                screenHome2.draw(0, 0);
+                homeScreens[1].draw(0, 0);
                 break;
             case 3:
-                screenHome3.draw(0, 0);
+                homeScreens[2].draw(0, 0);
                 break;
         }
     }
@@ -282,18 +277,18 @@ void ofApp::drawGame(){
         glm::vec3 trueObstaclePosition;
         trueObstaclePosition.x = obstacle.x * size;
         trueObstaclePosition.y = obstacle.y * size;
-        block.draw(trueObstaclePosition, size, size);
+        imageSprites[3].draw(trueObstaclePosition, size, size);
     }
     
     // The following fixes a bug with RGB transforming to BGR in the library
     // Source: https://forum.openframeworks.cc/t/ofimage-from-gif-displays-with-blue-tint/22989/6
     /* fix */ ofSetColor(255, 255, 255, 255);
-    /* fix */ coinSprite = coinGif.pages[coinIndex];
-    /* fix */ ofPixels pix = coinSprite.getPixels();
-    /* fix */ coinSprite.setFromPixels(pix);
-    /* fix */ enemySprite = enemyGif.pages[enemyIndex];
-    /* fix */ ofPixels pix2 = enemySprite.getPixels();
-    /* fix */ enemySprite.setFromPixels(pix2);
+    /* fix */ imageSprites[0] = coinGif.pages[coinIndex];
+    /* fix */ ofPixels pix = imageSprites[0].getPixels();
+    /* fix */ imageSprites[0].setFromPixels(pix);
+    /* fix */ imageSprites[1] = enemyGif.pages[enemyIndex];
+    /* fix */ ofPixels pix2 = imageSprites[1].getPixels();
+    /* fix */ imageSprites[1].setFromPixels(pix2);
     
     // Make a coin
     int coinPadding = 5;
@@ -301,7 +296,7 @@ void ofApp::drawGame(){
         glm::vec3 trueCoinPosition;
         trueCoinPosition.x = coin.x * size + coinPadding;
         trueCoinPosition.y = coin.y * size + coinPadding;
-        coinSprite.draw(trueCoinPosition.x, trueCoinPosition.y, size - coinPadding * 2, size - coinPadding * 2);
+        imageSprites[0].draw(trueCoinPosition.x, trueCoinPosition.y, size - coinPadding * 2, size - coinPadding * 2);
     }
     
     // Make an enemy
@@ -309,7 +304,7 @@ void ofApp::drawGame(){
         glm::vec3 trueEnemyPosition;
         trueEnemyPosition.x = enemy.x * size;
         trueEnemyPosition.y = enemy.y * size;
-        enemySprite.draw(trueEnemyPosition.x, trueEnemyPosition.y, size, size);
+        imageSprites[1].draw(trueEnemyPosition.x, trueEnemyPosition.y, size, size);
     }
     
 }
@@ -318,75 +313,81 @@ int ofApp::manhattanDistance(glm::vec3 A, glm::vec3 B) {
     return abs(A.y - B.y) + abs(A.x - B.x);
 }
 
-void ofApp::moveEnemies() {
+void ofApp::moveEnemyGreedy(glm::vec3 enemy, int index) {
     int minDistance = rows + columns;
     int position = -1;
+    
+    glm::vec3 up;
+    up.x = enemy.x;
+    up.y = enemy.y - 1;
+    int manhattanDistanceUp = manhattanDistance(pacmanPosition, up);
+    if (!hasCollision(up) && manhattanDistanceUp <= minDistance) {
+        minDistance = manhattanDistanceUp;
+        position = 0;
+    }
+    
+    glm::vec3 right;
+    right.x = enemy.x + 1;
+    right.y = enemy.y;
+    int manhattanDistanceRight = manhattanDistance(pacmanPosition, right);
+    if (!hasCollision(right) && manhattanDistanceRight <= minDistance) {
+        minDistance = manhattanDistanceRight;
+        position = 1;
+    }
+    
+    glm::vec3 down;
+    down.x = enemy.x;
+    down.y = enemy.y + 1;
+    int manhattanDistanceDown = manhattanDistance(pacmanPosition, down);
+    if (!hasCollision(down) && manhattanDistanceDown <= minDistance) {
+        minDistance = manhattanDistanceDown;
+        position = 2;
+    }
+    
+    glm::vec3 left;
+    left.x = enemy.x - 1;
+    left.y = enemy.y;
+    int manhattanDistanceLeft = manhattanDistance(pacmanPosition, left);
+    if (!hasCollision(left) && manhattanDistanceLeft <= minDistance) {
+        minDistance = manhattanDistanceLeft;
+        position = 3;
+    }
+    
+    switch (position) {
+        case 0:
+            enemies[index].x = up.x;
+            enemies[index].y = up.y;
+            break;
+        case 1:
+            enemies[index].x = right.x;
+            enemies[index].y = right.y;
+            break;
+        case 2:
+            enemies[index].x = down.x;
+            enemies[index].y = down.y;
+            break;
+        case 3:
+            enemies[index].x = left.x;
+            enemies[index].y = left.y;
+            break;
+    }
+    
+    // Check for collisions
+    if (
+        enemies[index].x == pacmanPosition.x &&
+        enemies[index].y == pacmanPosition.y
+        ) currentScreen = 2;
+}
+
+void ofApp::moveEnemies() {
     int index = 0;
     for (glm::vec3 enemy : enemies) {
-
-        glm::vec3 up;
-        up.x = enemy.x;
-        up.y = enemy.y - 1;
-        int manhattanDistanceUp = manhattanDistance(pacmanPosition, up);
-        if (!hasCollision(up) && manhattanDistanceUp <= minDistance) {
-            minDistance = manhattanDistanceUp;
-            position = 0;
+        if (index == 1) {
+            moveEnemyGreedy(enemy, index);
+        } else {
+            
         }
-        
-        glm::vec3 right;
-        right.x = enemy.x + 1;
-        right.y = enemy.y;
-        int manhattanDistanceRight = manhattanDistance(pacmanPosition, right);
-        if (!hasCollision(right) && manhattanDistanceRight <= minDistance) {
-            minDistance = manhattanDistanceRight;
-            position = 1;
-        }
-        
-        glm::vec3 down;
-        down.x = enemy.x;
-        down.y = enemy.y + 1;
-        int manhattanDistanceDown = manhattanDistance(pacmanPosition, down);
-        if (!hasCollision(down) && manhattanDistanceDown <= minDistance) {
-            minDistance = manhattanDistanceDown;
-            position = 2;
-        }
-        
-        glm::vec3 left;
-        left.x = enemy.x - 1;
-        left.y = enemy.y;
-        int manhattanDistanceLeft = manhattanDistance(pacmanPosition, left);
-        if (!hasCollision(left) && manhattanDistanceLeft <= minDistance) {
-            minDistance = manhattanDistanceLeft;
-            position = 3;
-        }
-
-        switch (position) {
-            case 0:
-                enemies[index].x = up.x;
-                enemies[index].y = up.y;
-                break;
-            case 1:
-                enemies[index].x = right.x;
-                enemies[index].y = right.y;
-                break;
-            case 2:
-                enemies[index].x = down.x;
-                enemies[index].y = down.y;
-                break;
-            case 3:
-                enemies[index].x = left.x;
-                enemies[index].y = left.y;
-                break;
-        }
-
-        // Check for collisions
-        if (
-            enemies[index].x == pacmanPosition.x &&
-            enemies[index].y == pacmanPosition.y
-        ) screen = 2;
-
         index++;
-
     }
 }
 
@@ -410,7 +411,7 @@ void ofApp::keyReleased(int key){
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
-    if (screen == 1) {
+    if (currentScreen == 1) {
         previousDirection = currentDirection;
         switch (key) {
             case 57356:
@@ -430,36 +431,35 @@ void ofApp::keyPressed(int key){
                 currentDirection = 2;
                 break;
         }
-    } else if (screen == 0) {
+    } else if (currentScreen == 0) {
         switch (key) {
             case 57356:
                 // Move left
-                if (characterOption != 1) {
-                    characterOption -= 1;
+                if (selectedCharacter != 1) {
+                    selectedCharacter -= 1;
                 } else {
-                    characterOption = 3;
+                    selectedCharacter = 3;
                 }
                 break;
             case 57358:
                 // Move right
-                if (characterOption != 3) {
-                    characterOption += 1;
+                if (selectedCharacter != 3) {
+                    selectedCharacter += 1;
                 } else {
-                    characterOption = 1;
+                    selectedCharacter = 1;
                 }
                 break;
             case 13: // Enter
                 ofApp::setupGame();
-                screen = 1;
+                currentScreen = 1;
                 break;
             case 32: // Spacebar
                 ofApp::setupGame();
-                screen = 1;
+                currentScreen = 1;
                 break;
         }
-    } else if (screen == 2 && (key == 13 || key == 32)) {
-        ofApp::setup();
-        screen = 0;
+    } else if (currentScreen == 2 && (key == 13 || key == 32)) {
+        restartApp.initRestart();
     }
 }
 
