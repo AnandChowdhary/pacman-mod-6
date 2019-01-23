@@ -29,8 +29,10 @@ class ofApp : public ofBaseApp{
         void collectCoin();
         void moveEnemies();
         void moveEnemyGreedy(glm::vec3 enemy, int index);
+        void moveEnemyRandom(glm::vec3 enemy, int index);
         void createWallLine(char direction, int x, int y, int length, bool obstacle = true);
-        void createCoins(char direction, int x, int y, int length);
+        void createCoins();
+        void readJoyStick();
         bool hasCollision(glm::vec3 position);
         int manhattanDistance(glm::vec3 A, glm::vec3 B);
         void createEnemy(int x, int y);

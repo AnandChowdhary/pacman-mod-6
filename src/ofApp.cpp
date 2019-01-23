@@ -54,7 +54,7 @@ void ofApp::setupGame() {
     // Initialize variables
     currentScreen = 0;
     points = 0;
-    currentTenths = (int)(ofGetElapsedTimeMillis() / 100);
+    currentTenths = (int)(ofGetElapsedTimeMillis() / 100); // Convert float to int
     animationIndex = 0;
     coinIndex = 0;
     enemyIndex = 0;
@@ -99,28 +99,18 @@ void ofApp::setupGame() {
         ofApp::createWallLine((obstacleData[i] == 0 ? 'h' : 'v'), obstacleData[i + 1], obstacleData[i + 2], obstacleData[i + 3]);
     }
     
-    // Leave a padding of 2 blocks for coins
-    for (int i = 2; i < columns - 2; i++) {
-        for (int j = 2; j < rows - 2; j++) {
-            // Check if there's an obstacle in this block
-            int hasSomething = false;
-            for (glm::vec3 obstacle : obstacles) {
-                if (obstacle.x == i && obstacle.y == j) hasSomething = true;
-            }
-            // If there isn't create a coin randomly (with probability 1 in 5)
-            if (!hasSomething && (rand() % 5 + 1) == 3) {
-                glm::vec3 newCoin;
-                newCoin.x = i;
-                newCoin.y = j;
-                coins.push_back(newCoin);
-            }
-        }
-    }
+    // Create coins
+    ofApp::createCoins();
 
     // Create a bunch of enemies
-    ofApp::createEnemy(7, 10);
-    ofApp::createEnemy(13, 10);
-    ofApp::createEnemy(10, 10);
+    ofApp::createEnemy(2, 2);
+    ofApp::createEnemy(18, 2);
+    ofApp::createEnemy(2, 28);
+    ofApp::createEnemy(2, 19);
+    ofApp::createEnemy(18, 19);
+    ofApp::createEnemy(5, 11);
+    ofApp::createEnemy(15, 10);
+    ofApp::createEnemy(10, 16);
     
 }
 
@@ -150,8 +140,24 @@ void ofApp::createWallLine(char direction, int x, int y, int length, bool obstac
 }
 
 //--------------------------------------------------------------
-void ofApp::createCoins(char direction, int x, int y, int length){
-    ofApp::createWallLine(direction, x, y, length, false);
+void ofApp::createCoins(){
+    // Leave a padding of 2 blocks for coins
+    for (int i = 2; i < columns - 2; i++) {
+        for (int j = 2; j < rows - 2; j++) {
+            // Check if there's an obstacle in this block
+            int hasSomething = false;
+            for (glm::vec3 obstacle : obstacles) {
+                if (obstacle.x == i && obstacle.y == j) hasSomething = true;
+            }
+            // If there isn't create a coin randomly (with probability 1 in 5)
+            if (!hasSomething && (rand() % 5 + 1) == 3) {
+                glm::vec3 newCoin;
+                newCoin.x = i;
+                newCoin.y = j;
+                coins.push_back(newCoin);
+            }
+        }
+    }
 }
 
 //--------------------------------------------------------------
@@ -173,6 +179,22 @@ string ofApp::jsonValueFromKey(string json, string key) {
 //--------------------------------------------------------------
 void ofApp::draw(){
 
+    // Read value from hardware
+    ofApp::readJoyStick();
+
+    // Draw the relevant screen
+    switch (currentScreen) {
+        case 1:
+            ofApp::drawGame();
+            break;
+        default:
+            ofApp::drawImageScreen(currentScreen);
+            break;
+    }
+
+}
+
+void ofApp::readJoyStick() {
     bool completed = true;
     bool jsonStringStarted = false;
     bool jsonStringEnded = false;
@@ -215,16 +237,6 @@ void ofApp::draw(){
             previousButtonState = false;
         }
     } catch (...) {}
-
-    switch (currentScreen) {
-        case 1:
-            ofApp::drawGame();
-            break;
-        default:
-            ofApp::drawImageScreen(currentScreen);
-            break;
-    }
-
 }
 
 void ofApp::drawImageScreen(int index) {
@@ -258,7 +270,6 @@ void ofApp::drawGame(){
     ofApp::drawPacman();
     
     // Move Pacman, ten times per second
-    // ofGetElapsedTimef(); returns a float, convert it to int
     int elapsedTenths = (int)(ofGetElapsedTimeMillis() / 100);
     if (elapsedTenths > currentTenths) {
         currentTenths++;
@@ -371,12 +382,51 @@ void ofApp::moveEnemyGreedy(glm::vec3 enemy, int index) {
             enemies[index].y = left.y;
             break;
     }
+
+}
+
+void ofApp::moveEnemyRandom(glm::vec3 enemy, int index) {
+    bool moved = false;
+
+    glm::vec3 up;
+    up.x = enemy.x;
+    up.y = enemy.y - 1;
+
+    glm::vec3 right;
+    right.x = enemy.x + 1;
+    right.y = enemy.y;
+
+    glm::vec3 down;
+    down.x = enemy.x;
+    down.y = enemy.y + 1;
+
+    glm::vec3 left;
+    left.x = enemy.x - 1;
+    left.y = enemy.y;
     
-    // Check for collisions
-    if (
-        enemies[index].x == pacmanPosition.x &&
-        enemies[index].y == pacmanPosition.y
-        ) currentScreen = 2;
+    while (!moved) {
+        glm::vec3 newPosition;
+        int randomPosition = (rand() % 4 + 1);
+        switch (randomPosition) {
+            case 1:
+                newPosition = up;
+                break;
+            case 2:
+                newPosition = down;
+                break;
+            case 3:
+                newPosition = left;
+                break;
+            case 4:
+                newPosition = right;
+                break;
+        }
+        if (!hasCollision(newPosition)) {
+            enemies[index].x = newPosition.x;
+            enemies[index].y = newPosition.y;
+            moved = true;
+        }
+    }
 }
 
 void ofApp::moveEnemies() {
@@ -385,8 +435,13 @@ void ofApp::moveEnemies() {
         if (index == 1) {
             moveEnemyGreedy(enemy, index);
         } else {
-            
+            moveEnemyRandom(enemy, index);
         }
+        // Check for collisions
+        if (
+            enemies[index].x == pacmanPosition.x &&
+            enemies[index].y == pacmanPosition.y
+        ) currentScreen = 2;
         index++;
     }
 }
@@ -523,13 +578,16 @@ void ofApp::movePacman(int direction){
 void ofApp::collectCoin(){
     int coinIndex = 0;
     for (glm::vec3 coin : coins) {
+        // Check if positions of the coin and user match
         if (coin.x == pacmanPosition.x && coin.y == pacmanPosition.y) {
             points++;
+            // Remove this coin from vector
             coins.erase(coins.begin() + coinIndex);
             break;
         }
         coinIndex++;
     }
+    if (coinIndex == 1) currentScreen = 2;
 }
 
 //--------------------------------------------------------------
