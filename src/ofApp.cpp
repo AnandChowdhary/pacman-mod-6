@@ -23,6 +23,7 @@ int selectedCharacter;
 
 ofImage imageSprites[3];
 ofImage homeScreens[4];
+ofSoundPlayer backgroundSounds[2];
 
 ofSerial mySerial;
 bool previousButtonState = false;
@@ -40,6 +41,10 @@ void ofApp::setup(){
     homeScreens[1].load("screens/option-2.png");
     homeScreens[2].load("screens/option-3.png");
     homeScreens[3].load("screens/end.png");
+    
+    // Load sounds
+    backgroundSounds[0].load("sounds/coin.wav");
+    backgroundSounds[1].load("sounds/death.wav");
     
     if (mySerial.setup()) {
         std::cout << "Serial has been set up!\n";
@@ -105,9 +110,7 @@ void ofApp::setupGame() {
     // Create a bunch of enemies
     ofApp::createEnemy(2, 2);
     ofApp::createEnemy(18, 2);
-    ofApp::createEnemy(2, 28);
     ofApp::createEnemy(2, 19);
-    ofApp::createEnemy(18, 19);
     ofApp::createEnemy(5, 11);
     ofApp::createEnemy(15, 10);
     ofApp::createEnemy(10, 16);
@@ -266,6 +269,9 @@ void ofApp::drawImageScreen(int index) {
 
 void ofApp::drawGame(){
     
+    // Checks whether you should be dead
+    ofApp::checkEnemyCollision();
+
     // Draw Pacman
     ofApp::drawPacman();
     
@@ -429,6 +435,19 @@ void ofApp::moveEnemyRandom(glm::vec3 enemy, int index) {
     }
 }
 
+void ofApp::checkEnemyCollision() {
+    for (glm::vec3 enemy : enemies) {
+        if (
+            enemy.x == pacmanPosition.x &&
+            enemy.y == pacmanPosition.y
+            ) {
+            std::cout << "You have died " << enemy.x << " " << enemy.y << " " << pacmanPosition.x << " " << pacmanPosition.y << "\n";
+            backgroundSounds[1].play();
+            currentScreen = 2;
+        }
+    }
+}
+
 void ofApp::moveEnemies() {
     int index = 0;
     for (glm::vec3 enemy : enemies) {
@@ -437,11 +456,6 @@ void ofApp::moveEnemies() {
         } else {
             moveEnemyRandom(enemy, index);
         }
-        // Check for collisions
-        if (
-            enemies[index].x == pacmanPosition.x &&
-            enemies[index].y == pacmanPosition.y
-        ) currentScreen = 2;
         index++;
     }
 }
@@ -583,6 +597,8 @@ void ofApp::collectCoin(){
             points++;
             // Remove this coin from vector
             coins.erase(coins.begin() + coinIndex);
+            // Play coin sound
+            backgroundSounds[0].play();
             break;
         }
         coinIndex++;

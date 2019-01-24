@@ -33,6 +33,7 @@ class ofApp : public ofBaseApp{
         void createWallLine(char direction, int x, int y, int length, bool obstacle = true);
         void createCoins();
         void readJoyStick();
+        void checkEnemyCollision();
         bool hasCollision(glm::vec3 position);
         int manhattanDistance(glm::vec3 A, glm::vec3 B);
         void createEnemy(int x, int y);

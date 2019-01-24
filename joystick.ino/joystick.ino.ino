@@ -17,13 +17,13 @@ void setup() {
 void loop() {
   String jsonString = "{ \"currentPosition\": ";
   if (digitalRead(limitSwitch1) == 0) {
-    jsonString += "\"do\"";
-  } else if (digitalRead(limitSwitch2) == 0) {
-    jsonString += "\"le\"";
-  } else if (digitalRead(limitSwitch3) == 0) {
-    jsonString += "\"up\"";
-  } else if (digitalRead(limitSwitch4) == 0) {
     jsonString += "\"ri\"";
+  } else if (digitalRead(limitSwitch2) == 0) {
+    jsonString += "\"do\"";
+  } else if (digitalRead(limitSwitch3) == 0) {
+    jsonString += "\"le\"";
+  } else if (digitalRead(limitSwitch4) == 0) {
+    jsonString += "\"up\"";
   } else {
     jsonString += "\"no\"";
   }
