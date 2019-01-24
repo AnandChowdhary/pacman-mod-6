@@ -1,3 +1,19 @@
+/*
+ * PIXELS - The Game
+ * Anand Chowdhary S1930702
+ * Suzanne Mulder S2013525
+ *
+ * Play a Pacman-inspired game with a maze,
+ * enemies, and coins, in different themes,
+ * including Mario, Angry Birds, and Pokemon
+ * Uses a joystick for controls.
+ *
+ * Last published on January 24, 2019
+ *
+ * MIT License
+ * Source code: https://github.com/AnandChowdhary/pacman-mod-6
+ */
+
 #include "iostream"
 #include "ofApp.h"
 #include <stdio.h>
@@ -12,7 +28,7 @@ std::vector<glm::vec3> obstacles = {};
 std::vector<glm::vec3> coins = {};
 std::vector<glm::vec3> enemies = {};
 
-int currentDirection, previousDirection;
+int currentDirection;
 int currentScreen;
 int points;
 int currentTenths;
@@ -54,6 +70,10 @@ void ofApp::setup(){
 
 }
 
+
+/**
+ * Setup the game
+ */
 void ofApp::setupGame() {
 
     // Initialize variables
@@ -68,12 +88,10 @@ void ofApp::setupGame() {
     obstacles.clear();
     enemies.clear();
     coins.clear();
-    
+
     pacmanPosition.x = 2;
     pacmanPosition.y = 28;
-    
     currentDirection = 1;
-    previousDirection = 1;
     
     // Load images
     if (selectedCharacter == 3) { // Angry Birds theme
@@ -97,7 +115,10 @@ void ofApp::setupGame() {
     }
     
     // Add obstacles
-    int obstacleData[] = { 0, 1, 1, 19, 1, 1, 1, 10, 0, 1, 10, 4, 1, 4, 10, 4, 0, 1, 13, 4, 0, 1, 15, 4, 1, 4, 15, 4, 0, 1, 18, 4, 1, 1, 18, 12, 0, 1, 29, 19, 1, 19, 1, 10, 0, 16, 10, 4, 1, 16, 10, 4, 0, 16, 13, 4, 0, 16, 15, 4, 1, 16, 15, 4, 0, 16, 18, 4, 1, 19, 18, 12, 0, 3, 3, 2, 0, 3, 4, 2, 0, 6, 3, 3, 0, 6, 4, 3, 1, 10, 2, 3, 0, 12, 3, 3, 0, 12, 4, 3, 0, 16, 3, 2, 0, 16, 4, 2, 0, 3, 6, 2, 0, 3, 8, 2, 1, 6, 6, 7, 0, 6, 9, 3, 0, 8, 6, 5, 1, 10, 6, 4, 1, 14, 6, 7, 0, 12, 9, 3, 0, 16, 6, 2, 0, 16, 8, 2, 0, 8, 11, 2, 0, 11, 11, 2, 1, 8, 11, 5, 1, 12, 11, 5, 0, 8, 15, 5, 1, 6, 14, 4, 1, 14, 14, 4, 0, 8, 17, 5, 1, 10, 17, 4, 0, 3, 20, 2, 1, 4, 20, 4, 0, 2, 25, 1, 1, 4, 25, 1, 0, 6, 21, 3, 1, 8, 21, 5, 1, 6, 23, 5, 0, 3, 27, 6, 1, 10, 22, 6, 0, 16, 20, 2, 1, 16, 20, 4, 0, 18, 25, 1, 1, 16, 25, 1, 0, 12, 21, 3, 1, 12, 21, 5, 1, 14, 23, 5, 0, 12, 27, 6 };
+    int obstacleData[] = {
+        0, 1, 1, 19,
+        1, 1, 1, 10,
+        0, 1, 10, 4, 1, 4, 10, 4, 0, 1, 13, 4, 0, 1, 15, 4, 1, 4, 15, 4, 0, 1, 18, 4, 1, 1, 18, 12, 0, 1, 29, 19, 1, 19, 1, 10, 0, 16, 10, 4, 1, 16, 10, 4, 0, 16, 13, 4, 0, 16, 15, 4, 1, 16, 15, 4, 0, 16, 18, 4, 1, 19, 18, 12, 0, 3, 3, 2, 0, 3, 4, 2, 0, 6, 3, 3, 0, 6, 4, 3, 1, 10, 2, 3, 0, 12, 3, 3, 0, 12, 4, 3, 0, 16, 3, 2, 0, 16, 4, 2, 0, 3, 6, 2, 0, 3, 8, 2, 1, 6, 6, 7, 0, 6, 9, 3, 0, 8, 6, 5, 1, 10, 6, 4, 1, 14, 6, 7, 0, 12, 9, 3, 0, 16, 6, 2, 0, 16, 8, 2, 0, 8, 11, 2, 0, 11, 11, 2, 1, 8, 11, 5, 1, 12, 11, 5, 0, 8, 15, 5, 1, 6, 14, 4, 1, 14, 14, 4, 0, 8, 17, 5, 1, 10, 17, 4, 0, 3, 20, 2, 1, 4, 20, 4, 0, 2, 25, 1, 1, 4, 25, 1, 0, 6, 21, 3, 1, 8, 21, 5, 1, 6, 23, 5, 0, 3, 27, 6, 1, 10, 22, 6, 0, 16, 20, 2, 1, 16, 20, 4, 0, 18, 25, 1, 1, 16, 25, 1, 0, 12, 21, 3, 1, 12, 21, 5, 1, 14, 23, 5, 0, 12, 27, 6 };
     
     // sizeof(arr)/sizeof(arr[0]) returns the true size of the array
     for (int i = 0; i < sizeof(obstacleData) / sizeof(obstacleData[0]); i += 4) {
@@ -117,6 +138,11 @@ void ofApp::setupGame() {
     
 }
 
+/**
+ * Create an enemy
+ * @param  x - X-cordinate position of enemy
+ * @param  y - Y-cordinate position of enemy
+ */
 void ofApp::createEnemy(int x, int y) {
     glm::vec3 enemyPosition;
     enemyPosition.x = x;
@@ -124,7 +150,14 @@ void ofApp::createEnemy(int x, int y) {
     enemies.push_back(enemyPosition);
 }
 
-//--------------------------------------------------------------
+/**
+ * Create a line of obstacles
+ * @param  direction - Horizontal or vertical
+ * @param  x - X-cordinate first position of obstacle
+ * @param  y - Y-cordinate first position of obstacle
+ * @param  length - Length of the line of obstacles
+ * @param  obstacle - Whether it is an obstacle or a boin
+ */
 void ofApp::createWallLine(char direction, int x, int y, int length, bool obstacle){
     for (int i = 0; i < length; i++) {
         glm::vec3 newObstacle;
@@ -142,7 +175,9 @@ void ofApp::createWallLine(char direction, int x, int y, int length, bool obstac
     }
 }
 
-//--------------------------------------------------------------
+/**
+ * Create a lot of coins
+ */
 void ofApp::createCoins(){
     // Leave a padding of 2 blocks for coins
     for (int i = 2; i < columns - 2; i++) {
@@ -168,6 +203,12 @@ void ofApp::update(){
 
 }
 
+/**
+ * Fetch the value of a key in a JSON object
+ * @param  json - The JSON string
+ * @param  key - Key to look for
+ * @return {string} JSON value
+ */
 string ofApp::jsonValueFromKey(string json, string key) {
     try {
         std::size_t position = json.find(key);
@@ -197,11 +238,15 @@ void ofApp::draw(){
 
 }
 
+/**
+ * Read serial data from the joystick
+ */
 void ofApp::readJoyStick() {
     bool completed = true;
     bool jsonStringStarted = false;
     bool jsonStringEnded = false;
     string jsonString = "";
+    // Run this until a line has ended
     while (!jsonStringEnded) {
         if (mySerial.available() > 0) {
             char a = mySerial.readByte();
@@ -215,6 +260,7 @@ void ofApp::readJoyStick() {
         }
     }
     
+    // Try-catch to prevent errors
     try {
         if (jsonValueFromKey(jsonString, "currentPosition") == "up" && previousDirectionState != "up") {
             ofApp::keyPressed(57357);
@@ -242,6 +288,9 @@ void ofApp::readJoyStick() {
     } catch (...) {}
 }
 
+/**
+ * Draw a static screen (e.g. score or homescreen)
+ */
 void ofApp::drawImageScreen(int index) {
     if (index == 2) {
         homeScreens[3].draw(0, 0);
@@ -267,12 +316,15 @@ void ofApp::drawImageScreen(int index) {
     }
 }
 
+/**
+ * Draw the game when you start playing
+ */
 void ofApp::drawGame(){
     
-    // Checks whether you should be dead
+    // Checks whether you have collided
     ofApp::checkEnemyCollision();
 
-    // Draw Pacman
+    // Draw the main character
     ofApp::drawPacman();
     
     // Move Pacman, ten times per second
@@ -281,6 +333,7 @@ void ofApp::drawGame(){
         currentTenths++;
         ofApp::movePacman(currentDirection);
         if (currentTenths % 2 == 0) ofApp::moveEnemies();
+        // Animate GIF sprites
         animationIndex++;
         if (animationIndex > characterGif.pages.size() - 1) animationIndex = 0;
         coinIndex++;
@@ -326,10 +379,21 @@ void ofApp::drawGame(){
     
 }
 
+/**
+ * Create an enemy
+ * @param  A - Vector A
+ * @param  B - Vector B
+ * @return {int} - Manhattan distance between two vectors
+ */
 int ofApp::manhattanDistance(glm::vec3 A, glm::vec3 B) {
     return abs(A.y - B.y) + abs(A.x - B.x);
 }
 
+/**
+ * Moves an enemy using the Greedy algorithm
+ * @param enemy - Vector of enemy's positon
+ * @param index - Array index of the enemy in enemies
+ */
 void ofApp::moveEnemyGreedy(glm::vec3 enemy, int index) {
     int minDistance = rows + columns;
     int position = -1;
@@ -391,6 +455,11 @@ void ofApp::moveEnemyGreedy(glm::vec3 enemy, int index) {
 
 }
 
+/**
+ * Moves an enemy randomly
+ * @param enemy - Vector of enemy's positon
+ * @param index - Array index of the enemy in enemies
+ */
 void ofApp::moveEnemyRandom(glm::vec3 enemy, int index) {
     bool moved = false;
 
@@ -435,6 +504,9 @@ void ofApp::moveEnemyRandom(glm::vec3 enemy, int index) {
     }
 }
 
+/**
+ * Checks if you have collided with an enemy
+ */
 void ofApp::checkEnemyCollision() {
     for (glm::vec3 enemy : enemies) {
         if (
@@ -448,6 +520,9 @@ void ofApp::checkEnemyCollision() {
     }
 }
 
+/**
+ * Moves all enemies by calling the relevant function
+ */
 void ofApp::moveEnemies() {
     int index = 0;
     for (glm::vec3 enemy : enemies) {
@@ -460,6 +535,9 @@ void ofApp::moveEnemies() {
     }
 }
 
+/**
+ * Draws the main character
+ */
 void ofApp::drawPacman() {
     // The following fixes a bug with RGB transforming to BGR in the library
     // Source: https://forum.openframeworks.cc/t/ofimage-from-gif-displays-with-blue-tint/22989/6
@@ -481,7 +559,6 @@ void ofApp::keyReleased(int key){
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
     if (currentScreen == 1) {
-        previousDirection = currentDirection;
         switch (key) {
             case 57356:
                 // Move left
@@ -532,7 +609,11 @@ void ofApp::keyPressed(int key){
     }
 }
 
-//--------------------------------------------------------------
+/**
+ * Checks whether there is an obstacle
+ * @param position - Vector of positon
+ * @return {bool} - Whether there is an obstacle
+ */
 bool ofApp::hasCollision(glm::vec3 position){
     int collisionDetected = false;
     if (position.x < 0) collisionDetected = true;
@@ -543,7 +624,11 @@ bool ofApp::hasCollision(glm::vec3 position){
     return collisionDetected;
 }
 
-//--------------------------------------------------------------
+
+/**
+ * Moves the main character
+ * @param direction - Direction to move in
+ */
 void ofApp::movePacman(int direction){
     glm::vec3 testPosition;
     switch (direction) {
@@ -588,7 +673,10 @@ void ofApp::movePacman(int direction){
 
 }
 
-//--------------------------------------------------------------
+
+/**
+ * Collect a coin if you've landed on one
+ */
 void ofApp::collectCoin(){
     int coinIndex = 0;
     for (glm::vec3 coin : coins) {
